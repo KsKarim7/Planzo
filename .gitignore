@@ -1,0 +1,45 @@
+node_modules/
+.env
+**/*.env
+
+# Ignore Sprint 2 & Sprint 3 backend files
+server/controllers/projectController.js
+server/controllers/taskController.js
+server/controllers/teamController.js
+server/controllers/reportController.js
+server/controllers/kanbanController.js
+server/controllers/activityLogController.js
+
+server/models/projectModel.js
+server/models/taskModel.js
+server/models/teamModel.js
+server/models/tagModel.js
+server/models/reportModel.js
+server/models/activityLogModel.js
+
+server/routes/projectRoutes.js
+server/routes/taskRoutes.js
+server/routes/teamRoutes.js
+server/routes/reportRoutes.js
+server/routes/kanbanRoutes.js
+server/routes/activityLogRoutes.js
+
+server/reports/
+
+# Ignore unnecessary frontend files
+view/src/pages/Project*
+view/src/pages/Task*
+view/src/pages/Team*
+view/src/pages/Kanban*
+view/src/pages/Report*
+view/src/pages/Log*
+
+view/src/api/projectApi.js
+view/src/api/taskApi.js
+view/src/api/teamApi.js
+view/src/api/kanbanApi.js
+view/src/api/reportApi.js
+
+# Uploads except placeholder
+server/uploads/profiles/*
+!server/uploads/profiles/.gitkeep
