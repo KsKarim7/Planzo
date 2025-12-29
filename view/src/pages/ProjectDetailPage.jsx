@@ -207,8 +207,8 @@ const ProjectDetailPage = () => {
           <div className="flex border-b border-gray-700 mb-6">
             <button
               className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${activeTab === 'members'
-                  ? 'text-purple-400 border-b-2 border-purple-400'
-                  : 'text-gray-400 hover:text-gray-200'
+                ? 'text-purple-400 border-b-2 border-purple-400'
+                : 'text-gray-400 hover:text-gray-200'
                 }`}
               onClick={() => setActiveTab('members')}
             >
@@ -217,8 +217,8 @@ const ProjectDetailPage = () => {
             </button>
             <button
               className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${activeTab === 'teams'
-                  ? 'text-purple-400 border-b-2 border-purple-400'
-                  : 'text-gray-400 hover:text-gray-200'
+                ? 'text-purple-400 border-b-2 border-purple-400'
+                : 'text-gray-400 hover:text-gray-200'
                 }`}
               onClick={() => setActiveTab('teams')}
             >
@@ -227,8 +227,8 @@ const ProjectDetailPage = () => {
             </button>
             <button
               className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${activeTab === 'views'
-                  ? 'text-purple-400 border-b-2 border-purple-400'
-                  : 'text-gray-400 hover:text-gray-200'
+                ? 'text-purple-400 border-b-2 border-purple-400'
+                : 'text-gray-400 hover:text-gray-200'
                 }`}
               onClick={() => {
                 setActiveTab('views');
@@ -288,10 +288,10 @@ const ProjectDetailPage = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.role === 'Owner'
-                                ? 'bg-purple-900/50 text-purple-200'
-                                : member.role === 'Manager'
-                                  ? 'bg-blue-900/50 text-blue-200'
-                                  : 'bg-gray-700 text-gray-200'
+                              ? 'bg-purple-900/50 text-purple-200'
+                              : member.role === 'Manager'
+                                ? 'bg-blue-900/50 text-blue-200'
+                                : 'bg-gray-700 text-gray-200'
                               }`}
                           >
                             {member.role}
@@ -382,8 +382,8 @@ const ProjectDetailPage = () => {
               <div className="flex mb-6 bg-gray-800/80 backdrop-blur-md rounded-lg border border-gray-700/50 p-1">
                 <button
                   className={`flex items-center gap-2 px-4 py-2 rounded-md ${activeView === 'dashboard'
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                     }`}
                   onClick={() => setActiveView('dashboard')}
                 >
@@ -392,8 +392,8 @@ const ProjectDetailPage = () => {
                 </button>
                 <button
                   className={`flex items-center gap-2 px-4 py-2 rounded-md ${activeView === 'kanban'
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                     }`}
                   onClick={() => setActiveView('kanban')}
                 >
@@ -402,8 +402,8 @@ const ProjectDetailPage = () => {
                 </button>
                 <button
                   className={`flex items-center gap-2 px-4 py-2 rounded-md ${activeView === 'calendar'
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                     }`}
                   onClick={() => setActiveView('calendar')}
                 >
@@ -412,8 +412,8 @@ const ProjectDetailPage = () => {
                 </button>
                 <button
                   className={`flex items-center gap-2 px-4 py-2 rounded-md ${activeView === 'activity'
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                     }`}
                   onClick={() => setActiveView('activity')}
                 >
