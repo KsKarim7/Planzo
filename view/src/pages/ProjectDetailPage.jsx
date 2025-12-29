@@ -48,17 +48,17 @@ const ProjectDetailPage = () => {
       setIsLoading(true);
       const response = await axiosInstance.get(`/projects/${projectId}`);
       setProject(response.data.project);
-      
+
       // Check if current user is the owner
       const ownerMember = response.data.project.members.find(
         member => member.role === 'Owner'
       );
-      
+
       if (ownerMember && userId) {
         const isCurrentUserOwner = ownerMember.user._id === userId;
         setIsOwner(isCurrentUserOwner);
       }
-      
+
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching project:', error);
@@ -74,7 +74,7 @@ const ProjectDetailPage = () => {
         `/projects/${projectId}/members`,
         userData
       );
-      
+
       toast.success('Member added successfully');
       fetchProjectData();
       setIsAddMemberModalOpen(false);
@@ -88,11 +88,11 @@ const ProjectDetailPage = () => {
     if (window.confirm('Are you sure you want to remove this member?')) {
       try {
         console.log(`Removing member with user ID: ${userId}`);
-        
+
         const response = await axiosInstance.delete(
           `/projects/${projectId}/members/${userId}`
         );
-        
+
         console.log('Remove member response:', response.data);
         toast.success('Member removed successfully');
         fetchProjectData();
@@ -110,7 +110,7 @@ const ProjectDetailPage = () => {
         `/projects/${projectId}/teams`,
         teamData
       );
-      
+
       toast.success('Team added successfully');
       fetchProjectData();
       setIsAddTeamModalOpen(false);
@@ -126,7 +126,7 @@ const ProjectDetailPage = () => {
         await axiosInstance.delete(
           `/projects/${projectId}/teams/${teamId}`
         );
-        
+
         toast.success('Team removed successfully');
         fetchProjectData();
       } catch (error) {
@@ -164,7 +164,7 @@ const ProjectDetailPage = () => {
               <p className="text-gray-300 mb-4">{project.description || 'No description'}</p>
             </div>
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={() => navigate(`/reports/project/${projectId}`)}
                 className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-300 flex items-center gap-1.5 shadow-lg"
               >
@@ -206,33 +206,30 @@ const ProjectDetailPage = () => {
           {/* Main navigation tabs */}
           <div className="flex border-b border-gray-700 mb-6">
             <button
-              className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
-                activeTab === 'members'
+              className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${activeTab === 'members'
                   ? 'text-purple-400 border-b-2 border-purple-400'
                   : 'text-gray-400 hover:text-gray-200'
-              }`}
+                }`}
               onClick={() => setActiveTab('members')}
             >
               <Users size={18} />
               Members
             </button>
             <button
-              className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
-                activeTab === 'teams'
+              className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${activeTab === 'teams'
                   ? 'text-purple-400 border-b-2 border-purple-400'
                   : 'text-gray-400 hover:text-gray-200'
-              }`}
+                }`}
               onClick={() => setActiveTab('teams')}
             >
               <Briefcase size={18} />
               Teams
             </button>
             <button
-              className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
-                activeTab === 'views'
+              className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${activeTab === 'views'
                   ? 'text-purple-400 border-b-2 border-purple-400'
                   : 'text-gray-400 hover:text-gray-200'
-              }`}
+                }`}
               onClick={() => {
                 setActiveTab('views');
                 setActiveView('dashboard');
@@ -290,13 +287,12 @@ const ProjectDetailPage = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              member.role === 'Owner'
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.role === 'Owner'
                                 ? 'bg-purple-900/50 text-purple-200'
                                 : member.role === 'Manager'
-                                ? 'bg-blue-900/50 text-blue-200'
-                                : 'bg-gray-700 text-gray-200'
-                            }`}
+                                  ? 'bg-blue-900/50 text-blue-200'
+                                  : 'bg-gray-700 text-gray-200'
+                              }`}
                           >
                             {member.role}
                           </span>
@@ -385,44 +381,40 @@ const ProjectDetailPage = () => {
               {/* Views Navigation */}
               <div className="flex mb-6 bg-gray-800/80 backdrop-blur-md rounded-lg border border-gray-700/50 p-1">
                 <button
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md ${
-                    activeView === 'dashboard'
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md ${activeView === 'dashboard'
                       ? 'bg-indigo-600 text-white'
                       : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-                  }`}
+                    }`}
                   onClick={() => setActiveView('dashboard')}
                 >
                   <BarChart3 size={18} />
                   Dashboard
                 </button>
                 <button
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md ${
-                    activeView === 'kanban'
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md ${activeView === 'kanban'
                       ? 'bg-indigo-600 text-white'
                       : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-                  }`}
+                    }`}
                   onClick={() => setActiveView('kanban')}
                 >
                   <KanbanSquare size={18} />
                   Kanban
                 </button>
                 <button
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md ${
-                    activeView === 'calendar'
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md ${activeView === 'calendar'
                       ? 'bg-indigo-600 text-white'
                       : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-                  }`}
+                    }`}
                   onClick={() => setActiveView('calendar')}
                 >
                   <Calendar size={18} />
                   Calendar
                 </button>
                 <button
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md ${
-                    activeView === 'activity'
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md ${activeView === 'activity'
                       ? 'bg-indigo-600 text-white'
                       : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-                  }`}
+                    }`}
                   onClick={() => setActiveView('activity')}
                 >
                   <Activity size={18} />
