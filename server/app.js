@@ -35,15 +35,15 @@ app.use((req, res, next) => {
 app.use(cors({
     origin: true, // Allow all origins temporarily for debugging
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.use("/api/auth",authRouter);
-app.use("/api/teams",teamRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/teams", teamRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api", taskRouter);
 app.use("/api/kanban", kanbanRouter);
@@ -51,7 +51,7 @@ app.use("/api/activity", activityLogRouter);
 app.use("/api", reportRouter);
 // app.use("/api/chat", chatRouter); - Removed
 
-app.listen( port, ()=>{
+app.listen(port, () => {
     console.log("Server started on port", port);
     connectDB();
 });

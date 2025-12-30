@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, ArrowLeft, Calendar, Clock, AlertTriangle, CheckCircle, Users, Edit, Search, Filter, RefreshCw, FileText } from 'lucide-react';
 import axios from 'axios';
+import { axiosInstance } from '../libs/axios';
 import toast from 'react-hot-toast';
 import CreateTaskModal from '../components/CreateTaskModal';
 import EditTaskModal from '../components/EditTaskModal';
@@ -15,7 +16,6 @@ const ProjectTasksPage = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
-  const [isOwner, setIsOwner] = useState(false);
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -23,13 +23,13 @@ const ProjectTasksPage = () => {
       try {
         console.log('Fetching user data');
         console.log(`API URL: ${import.meta.env.VITE_API_URL}/api/auth/me`);
-        
+
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
           withCredentials: true,
         });
-        
+
         console.log('User data response:', response.data);
-        
+
         // Make sure we're getting the correct user ID
         const id = response.data.user?._id || response.data._id;
         console.log('Setting user ID to:', id);
@@ -59,28 +59,22 @@ const ProjectTasksPage = () => {
       setIsLoading(true);
       console.log(`Fetching project data for ID: ${projectId}`);
       console.log(`API URL: ${import.meta.env.VITE_API_URL}/api/projects/${projectId}`);
-      
+
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/projects/${projectId}`, {
         withCredentials: true,
       });
-      
+
       console.log('Project data response:', response.data);
       setProject(response.data.project);
-      
-      // Check if current user is the owner
+
+      // Check if current user is the owner (kept logs for debugging)
       const ownerMember = response.data.project.members.find(
         member => member.role === 'Owner'
       );
-      
+
       console.log('Owner member:', ownerMember);
       console.log('Current user ID:', userId);
-      
-      if (ownerMember && userId) {
-        const isCurrentUserOwner = ownerMember.user._id === userId;
-        console.log('Is current user the owner?', isCurrentUserOwner);
-        setIsOwner(isCurrentUserOwner);
-      }
-      
+
     } catch (error) {
       console.error('Error fetching project:', error);
       console.error('Error details:', error.response?.data);
@@ -94,11 +88,11 @@ const ProjectTasksPage = () => {
     try {
       console.log(`Fetching tasks for project: ${projectId}`);
       console.log(`API URL: ${import.meta.env.VITE_API_URL}/api/projects/${projectId}/tasks`);
-      
+
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/projects/${projectId}/tasks`, {
         withCredentials: true,
       });
-      
+
       console.log('Tasks response:', response.data);
       setTasks(response.data.tasks || []);
       setIsLoading(false);
@@ -114,13 +108,13 @@ const ProjectTasksPage = () => {
     try {
       console.log('Creating task with data:', taskData);
       console.log(`API URL: ${import.meta.env.VITE_API_URL}/api/projects/${projectId}/tasks`);
-      
+
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/projects/${projectId}/tasks`,
         taskData,
         { withCredentials: true }
       );
-      
+
       console.log('Create task response:', response.data);
       toast.success('Task created successfully');
       fetchTasks();
@@ -136,31 +130,48 @@ const ProjectTasksPage = () => {
     try {
       console.log('Updating task with data:', taskData);
       console.log(`Task ID: ${taskId}`);
-      
-      // Ensure the correct API URL structure
-      const apiUrl = `${import.meta.env.VITE_API_URL}/api/projects/${projectId}/tasks/${taskId}`;
-      console.log(`Sending PATCH request to: ${apiUrl}`);
-      
-      const response = await axios.patch(
-        apiUrl,
-        taskData,
-        { withCredentials: true }
-      );
-      
+
+      // Use shared axiosInstance which already has baseURL and credentials configured
+      const apiPath = `/projects/${projectId}/tasks/${taskId}`;
+      console.log(`Sending PATCH request to: ${apiPath}`);
+
+      const response = await axiosInstance.patch(apiPath, taskData);
+
       console.log('Update task response:', response.data);
       toast.success('Task updated successfully');
       fetchTasks();
       setIsEditModalOpen(false);
       setCurrentTask(null);
     } catch (error) {
-      console.error('Error updating task:', error);
+      console.error('Error updating task full object:', error);
       console.error('Error response status:', error.response?.status);
       console.error('Error response data:', error.response?.data);
-      
+
       if (error.response) {
-        toast.error(`Failed to update task: ${error.response.data?.message || error.response.statusText}`);
+        // Server responded with an error status
+        const serverMessage = error.response.data?.message || error.response.statusText || 'Server error while updating task';
+        toast.error(`Failed to update task: ${serverMessage}`);
+      } else if (error.request) {
+        // Request was made but no response received — try a light reachability check
+        toast.error('Network error: Unable to reach the API server. Checking server reachability...');
+        try {
+          const health = await axiosInstance.get('/auth/me');
+          console.log('Reachability check response from /auth/me:', health.status, health.data);
+          // If we got a response, server is reachable — surface more guidance
+          toast.error('Server is reachable but the update request did not receive a response. Check server logs for route handling or CORS issues.');
+        } catch (checkErr) {
+          console.error('Reachability check failed:', checkErr);
+          if (checkErr.request && !checkErr.response) {
+            toast.error('Server appears unreachable. Ensure the backend is running and VITE_API_URL is set correctly.');
+          } else if (checkErr.response) {
+            toast.error(`Reachability check failed: ${checkErr.response.data?.message || checkErr.response.statusText}`);
+          } else {
+            toast.error(`Reachability check error: ${checkErr.message || 'Unexpected error'}`);
+          }
+        }
       } else {
-        toast.error(`Network error: ${error.message}`);
+        // Something else happened setting up the request
+        toast.error(`Error: ${error.message || 'Unexpected error'}`);
       }
     }
   };
@@ -206,7 +217,7 @@ const ProjectTasksPage = () => {
 
   const TaskStatusDropdown = ({ task, currentStatus }) => {
     const [isOpen, setIsOpen] = useState(false);
-    
+
     const statusOptions = [
       { value: 'Assigned', label: 'Move to Assigned', color: 'bg-blue-900/50 text-blue-300' },
       { value: 'Ongoing', label: 'Move to Ongoing', color: 'bg-yellow-900/50 text-yellow-300' },
@@ -221,13 +232,13 @@ const ProjectTasksPage = () => {
         console.log(`Moving task ${taskId} to column ${column}`);
         const apiUrl = `${import.meta.env.VITE_API_URL}/api/kanban/task/${taskId}/move`;
         console.log(`Sending PUT request to: ${apiUrl}`);
-        
+
         const response = await axios.put(
           apiUrl,
           { column },
           { withCredentials: true }
         );
-        
+
         console.log('Move task response:', response.data);
         toast.success(`Task moved to ${column}`);
         fetchTasks();
@@ -242,19 +253,18 @@ const ProjectTasksPage = () => {
       <div className="relative">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`text-xs px-2 py-1 ${
-            currentStatus === 'Assigned' ? 'bg-indigo-900/50 text-indigo-300' :
+          className={`text-xs px-2 py-1 ${currentStatus === 'Assigned' ? 'bg-indigo-900/50 text-indigo-300' :
             currentStatus === 'Ongoing' ? 'bg-yellow-900/50 text-yellow-300' :
-            'bg-green-900/50 text-green-300'
-          } rounded hover:opacity-80 transition-colors flex items-center`}
+              'bg-green-900/50 text-green-300'
+            } rounded hover:opacity-80 transition-colors flex items-center`}
         >
-          {currentStatus === 'Assigned' ? 'Start Task' : 
-           currentStatus === 'Ongoing' ? 'Complete' : 'Reopen'}
+          {currentStatus === 'Assigned' ? 'Start Task' :
+            currentStatus === 'Ongoing' ? 'Complete' : 'Reopen'}
           <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
-        
+
         {isOpen && (
           <div className="absolute right-0 bottom-full mb-1 bg-gray-800 rounded-md shadow-lg z-10 py-1 min-w-[120px] border border-gray-700">
             {availableOptions.map(option => (
@@ -283,7 +293,7 @@ const ProjectTasksPage = () => {
       >
         <div className="flex justify-between items-start mb-2">
           <h4 className="font-medium text-gray-200">{task.title}</h4>
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               openEditModal(task);
@@ -294,7 +304,7 @@ const ProjectTasksPage = () => {
           </button>
         </div>
         <p className="text-gray-400 text-sm mb-3 line-clamp-2">{task.description}</p>
-        
+
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center">
             <Users size={14} className="text-gray-400 mr-1" />
@@ -306,10 +316,10 @@ const ProjectTasksPage = () => {
             {task.priority}
           </span>
         </div>
-        
+
         <div className="flex justify-between items-center">
           <div className="text-xs text-gray-400">
-            {status === 'Completed' 
+            {status === 'Completed'
               ? `Completed: ${new Date(task.updatedAt).toLocaleDateString()}`
               : `Due: ${new Date(task.dueDate).toLocaleDateString()}`
             }
@@ -382,7 +392,7 @@ const ProjectTasksPage = () => {
               {(() => {
                 // Create a Map to track unique members by ID
                 const uniqueMembers = new Map();
-                
+
                 // Add project members
                 project.members.forEach(member => {
                   uniqueMembers.set(member.user._id, {
@@ -391,7 +401,7 @@ const ProjectTasksPage = () => {
                     isProjectMember: true
                   });
                 });
-                
+
                 // Add team members if they exist
                 if (project.teams && project.teams.length > 0) {
                   project.teams.forEach(team => {
@@ -410,7 +420,7 @@ const ProjectTasksPage = () => {
                     }
                   });
                 }
-                
+
                 // Convert map to array and render
                 return Array.from(uniqueMembers.values()).map((memberData) => (
                   <div
@@ -429,15 +439,14 @@ const ProjectTasksPage = () => {
                       )}
                     </div>
                     <span className="text-sm text-gray-200">{memberData.user.name}</span>
-                    <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
-                      memberData.isProjectMember ? (
-                        memberData.role === 'Owner'
-                          ? 'bg-purple-900/50 text-purple-300'
-                          : memberData.role === 'Manager'
+                    <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${memberData.isProjectMember ? (
+                      memberData.role === 'Owner'
+                        ? 'bg-purple-900/50 text-purple-300'
+                        : memberData.role === 'Manager'
                           ? 'bg-blue-900/50 text-blue-300'
                           : 'bg-gray-800/50 text-gray-300'
-                      ) : 'bg-indigo-900/50 text-indigo-300'
-                    }`}>
+                    ) : 'bg-indigo-900/50 text-indigo-300'
+                      }`}>
                       {memberData.role}
                     </span>
                   </div>
@@ -451,7 +460,7 @@ const ProjectTasksPage = () => {
           {/* Assigned Tasks Column */}
           <div className="bg-gray-800/60 backdrop-blur-md rounded-xl shadow-xl border border-gray-700/50 p-4">
             <div className="flex items-center mb-4">
-              <Calendar size={18} className="text-blue-400 mr-2" />
+              {getStatusIcon('Assigned')}
               <h3 className="text-lg font-semibold text-gray-200">Assigned</h3>
               <span className="ml-2 bg-blue-900/50 text-blue-300 text-xs px-2 py-0.5 rounded-full">
                 {assignedTasks.length}
@@ -470,7 +479,7 @@ const ProjectTasksPage = () => {
           {/* Ongoing Tasks Column */}
           <div className="bg-gray-800/60 backdrop-blur-md rounded-xl shadow-xl border border-gray-700/50 p-4">
             <div className="flex items-center mb-4">
-              <Clock size={18} className="text-yellow-400 mr-2" />
+              {getStatusIcon('Ongoing')}
               <h3 className="text-lg font-semibold text-gray-200">Ongoing</h3>
               <span className="ml-2 bg-yellow-900/50 text-yellow-300 text-xs px-2 py-0.5 rounded-full">
                 {ongoingTasks.length}
@@ -489,7 +498,7 @@ const ProjectTasksPage = () => {
           {/* Completed Tasks Column */}
           <div className="bg-gray-800/60 backdrop-blur-md rounded-xl shadow-xl border border-gray-700/50 p-4">
             <div className="flex items-center mb-4">
-              <CheckCircle size={18} className="text-green-400 mr-2" />
+              {getStatusIcon('Completed')}
               <h3 className="text-lg font-semibold text-gray-200">Completed</h3>
               <span className="ml-2 bg-green-900/50 text-green-300 text-xs px-2 py-0.5 rounded-full">
                 {completedTasks.length}

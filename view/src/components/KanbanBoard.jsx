@@ -4,7 +4,7 @@ import { axiosInstance } from '../libs/axios';
 import { Clock, Calendar, AlertCircle, CheckCircle, MoreVertical, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const KanbanBoard = ({ projectId }) => {
+const KanbanBoard = ({ projectId, canManageTasks = false }) => {
   const [columns, setColumns] = useState({
     'Assigned': [],
     'Ongoing': [],
@@ -33,7 +33,7 @@ const KanbanBoard = ({ projectId }) => {
   };
 
   const handleDragEnd = async (result) => {
-    const { destination, source, draggableId } = result;
+    const { destination, source } = result;
 
     // Dropped outside a droppable area
     if (!destination) return;
@@ -48,34 +48,34 @@ const KanbanBoard = ({ projectId }) => {
 
     // Create a copy of our columns
     const newColumns = { ...columns };
-    
+
     // Remove task from source column
     const sourceColumn = [...newColumns[source.droppableId]];
     const taskToMove = sourceColumn[source.index];
     sourceColumn.splice(source.index, 1);
-    
+
     // Add task to destination column
     const destColumn = [...newColumns[destination.droppableId]];
     destColumn.splice(destination.index, 0, taskToMove);
-    
+
     // Update columns state with new data
     newColumns[source.droppableId] = sourceColumn;
     newColumns[destination.droppableId] = destColumn;
-    
+
     // Optimistically update UI
     setColumns(newColumns);
-    
+
     try {
       // Update task status on the server
       await axiosInstance.put(`/kanban/task/${taskToMove._id}/move`, {
         column: destination.droppableId
       });
-      
+
       toast.success(`Task moved to ${destination.droppableId}`);
     } catch (error) {
       console.error('Error updating task status:', error);
       toast.error('Failed to update task status');
-      
+
       // Revert back to original state on error
       fetchKanbanData();
     }
@@ -127,7 +127,7 @@ const KanbanBoard = ({ projectId }) => {
   return (
     <div className="kanban-board">
       <h2 className="text-xl font-semibold text-white mb-6">Kanban Board</h2>
-      
+
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {Object.entries(columns).map(([columnId, tasks]) => (
@@ -142,7 +142,7 @@ const KanbanBoard = ({ projectId }) => {
                     </span>
                   </div>
                 </div>
-                
+
                 <Droppable droppableId={columnId}>
                   {(provided) => (
                     <div
@@ -161,17 +161,38 @@ const KanbanBoard = ({ projectId }) => {
                             >
                               <div className="flex justify-between items-start mb-2">
                                 <h4 className="font-medium text-white">{task.title}</h4>
+                                {canManageTasks && (
+                                  <button
+                                    className="text-gray-400 hover:text-white mr-2"
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (window.confirm('Are you sure you want to delete this task?')) {
+                                        try {
+                                          await axiosInstance.delete(`/projects/${projectId}/tasks/${task._id}`);
+                                          toast.success('Task deleted');
+                                          fetchKanbanData();
+                                        } catch (err) {
+                                          console.error('Delete task error:', err);
+                                          const msg = err.response?.data?.message || 'Failed to delete task';
+                                          toast.error(msg);
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    <span role="img" aria-label="Delete">🗑</span>
+                                  </button>
+                                )}
                                 <button className="text-gray-400 hover:text-white">
                                   <MoreVertical size={16} />
                                 </button>
                               </div>
-                              
+
                               {task.description && (
                                 <p className="text-gray-400 text-sm mb-3 line-clamp-2">
                                   {task.description}
                                 </p>
                               )}
-                              
+
                               <div className="flex justify-between items-center mt-2">
                                 <div className="flex items-center gap-1">
                                   <div className="flex -space-x-2">
@@ -182,7 +203,7 @@ const KanbanBoard = ({ projectId }) => {
                                     )}
                                   </div>
                                 </div>
-                                
+
                                 <div className="flex gap-2 items-center">
                                   <span className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`}></span>
                                   <span className="text-xs text-gray-400">

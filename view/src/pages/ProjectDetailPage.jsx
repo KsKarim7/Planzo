@@ -21,6 +21,7 @@ const ProjectDetailPage = () => {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [canManageTasks, setCanManageTasks] = useState(false);
   const [userId, setUserId] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -49,7 +50,7 @@ const ProjectDetailPage = () => {
       const response = await axiosInstance.get(`/projects/${projectId}`);
       setProject(response.data.project);
 
-      // Check if current user is the owner
+      // Check if current user is the owner or manager
       const ownerMember = response.data.project.members.find(
         member => member.role === 'Owner'
       );
@@ -58,6 +59,13 @@ const ProjectDetailPage = () => {
         const isCurrentUserOwner = ownerMember.user._id === userId;
         setIsOwner(isCurrentUserOwner);
       }
+
+      const currentMember = response.data.project.members.find(
+        (m) => m.user._id === userId
+      );
+
+      const isManagerOrOwner = currentMember && (currentMember.role === 'Manager' || currentMember.role === 'Owner');
+      setCanManageTasks(Boolean(isManagerOrOwner));
 
       setIsLoading(false);
     } catch (error) {
@@ -424,7 +432,7 @@ const ProjectDetailPage = () => {
 
               {/* View Content */}
               {activeView === 'dashboard' && <ProjectDashboard projectId={projectId} />}
-              {activeView === 'kanban' && <KanbanBoard projectId={projectId} />}
+              {activeView === 'kanban' && <KanbanBoard projectId={projectId} canManageTasks={canManageTasks} />}
               {activeView === 'calendar' && <CalendarView projectId={projectId} />}
               {activeView === 'activity' && <ActivityLog projectId={projectId} />}
             </div>

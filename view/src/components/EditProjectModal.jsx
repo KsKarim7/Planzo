@@ -93,3 +93,4 @@ const EditProjectModal = ({ isOpen, onClose, project, onUpdateProject }) => {
 export default EditProjectModal;
 
 
+
