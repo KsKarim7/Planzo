@@ -5,11 +5,11 @@ import toast from 'react-hot-toast';
 
 const GoToProjects = () => {
   const navigate = useNavigate();
-  
+
   const handleClick = () => {
-    toast.success("Alavi's section starts from here. Adjust project path");
+    toast.success("Woohoo! Let's navigate to Projects.");
     // Uncomment and update path when ready:
-    // navigate('/projects');
+    navigate('/projects');
   };
 
   return (
@@ -19,7 +19,7 @@ const GoToProjects = () => {
           <LayoutDashboard size={20} />
           Team Projects
         </h3>
-        
+
         <button
           onClick={handleClick}
           className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-all"
@@ -27,7 +27,7 @@ const GoToProjects = () => {
           Go to Projects
         </button>
       </div>
-      
+
       <p className="mt-2 text-gray-400">
         All projects associated with this team.
       </p>
